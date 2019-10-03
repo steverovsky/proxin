@@ -1,5 +1,3 @@
-require "spec_helper"
-
 describe Proxin::Proxy, type: :model do
   context "#to_s" do
     context "when call #to_s" do

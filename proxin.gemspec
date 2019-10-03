@@ -16,6 +16,8 @@ Gem::Specification.new do |s|
 
   s.license = 'MIT'
 
+  s.add_dependency "typhoeus", ">= 1.3"
+
   s.files        = `git ls-files`.split("\n")
   s.test_files   = `git ls-files -- spec/*`.split("\n")
   s.require_path = 'lib'

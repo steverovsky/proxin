@@ -1,75 +1,52 @@
-require 'forwardable'
-
 module Proxin
   class Boiler
-    extend Forwardable
+    attr_reader :actions, :proxies, :tasks, :conclusion
 
-    def_delegators :@conclusion,
-                   :statistics, :groups, :status, :success?, :partial_success?, :failure
-
-    attr_reader :proxies,
-                :actions,
-                :conclusion
-
-    def initialize(proxies, actions: ActionType.all)
-      initialize_components(proxies, expected_class: Proxy, attribute_name: :proxies)
-      initialize_components(actions, expected_class: Action::Base, attribute_name: :actions)
+    def initialize(proxies, actions)
+      @proxies = proxies
+      @actions = actions
     end
 
-    def run
+    def call
       initialize_conclusion
-      perform_actions
-      summarize_conclusion
+      build_tasks
+      process_tasks
+      handle_tasks_output
     end
 
     private
 
     def initialize_conclusion
-      raise NotImplementedError
+      @conclusion ||= Conclusion.new
     end
 
-    def perform_actions # TODO: метод построить пары и пройтись по ним
-      @proxies.each do |proxy|
-        @actions.each do |action|
-          @conclusion.handle_action_output(perform_action(proxy, action))
-          # TODO: Conclusion::ActionHandler.new(conclusion, performer_output)
-          # TODO: Conclusion::ActionHandlers::HTTPGetter
-          # этот сервис должен
-          # добавить в секцию details запись
-          # найти прокси по proxy.to_s
+    def build_tasks
+      @tasks = []
+
+      @actions.each do |action|
+        @proxies.each do |proxy|
+          @tasks << { action: action, proxy: proxy }
         end
       end
     end
 
-    def perform_action(proxy, action)
-      implementer = Implementer.new(proxy: proxy, action: action)
-      implementer.call
+    def process_tasks
+      @tasks.each do |task|
+        executor = find_task_executor(task).new(proxy: task[:proxy], action: task[:action])
+        executor.call
 
-      implementer.output
+        task.merge!(output: executor.output)
+      end
     end
 
-    def summarize_conclusion
-      # TODO: считает секцию
-      # посчитать status
-      # посчитать statistics
-      # посчитать groups
-
-      @conclusion.summarize
+    def handle_tasks_output
+      @conclusion.handle_tasks_output(@tasks)
     end
 
-    def initialize_components(component, expected_class:, attribute_name:)
-      validate_component(component, expected_class: expected_class)
-
-      instance_variable_set(
-        "@#{attribute_name.to_s}",
-        component.is_a?(Array) ? component : [component]
-      )
-    end
-
-    def validate_component(component, expected_class:)
-      if !component.is_a?(expected_class) || (component.is_a?(Array) && component.empty?)
-        # TODO: проверить объекты внутри массива
-        raise Proxin::InvalidComponentError
+    def find_task_executor(task)
+      case task[:action]
+      when Action::HTTPGetter then Implementers::HTTPGetter
+      else raise NotImplementedError
       end
     end
   end

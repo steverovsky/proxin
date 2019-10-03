@@ -1,7 +1,11 @@
 module Proxin
-  module Action # Actions?
+  module Action
     class HTTPGetter
-      attr_accessor :uri
+      attr_reader :uri
+
+      def initialize(uri:)
+        @uri = uri
+      end
     end
   end
 end
