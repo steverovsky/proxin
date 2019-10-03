@@ -1,7 +1,6 @@
 # proxin
 
-Easy way to profiling proxy.
-Combine proxies and actions for magic.
+Combine proxies with actions for checking and profiling.
 ##
 ```ruby
 require "proxin"
