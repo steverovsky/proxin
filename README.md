@@ -1,16 +1,9 @@
 # proxin
 
 Easy way to profiling proxy.
-Combine proxies and actions for checking health.
-
+Combine proxies and actions for magic.
 ##
-
-Example:
-
 ```ruby
-
-
-
 require "proxin"
 
 proxy = Proxin::Proxy.new(
@@ -33,12 +26,12 @@ boiler.conclusion.status
 boiler.conclusion.groups.alive
 => [
   {
-    :proxy => #<Proxin::Proxy:0x00007f8975992090 @ip="51.158.68.133", @port="8811", @username=nil, @pa>
+    :proxy => #<Proxin::Proxy @ip="51.158.68.133", @port="8811", @username=nil, @password=nil>
     :successful_tasks => [
       {
-        :action => #<Proxin::Action::HTTPGetter:0x00007f8975a31e10 @uri="https://google.com">,
-        :proxy => #<Proxin::Proxy:0x00007f8975992090 @ip="51.158.68.133", @port="8811", @username=nil,>
-        :output => #<Proxin::Implementers::HTTPGetterOutput:0x00007f8975a39908 @uri="https://google.co>
+        :action => #<Proxin::Action::HTTPGetter @uri="https://google.com">,
+        :proxy => #<Proxin::Proxy @ip="51.158.68.133", @port="8811", @username=nil, @password=nil>,
+        :output => #<Proxin::Implementers::HTTPGetterOutput @uri="https://google.com, @status="success", @response_code=200>
       }
     ],
     :failed_tasks => []
