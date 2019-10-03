@@ -1,0 +1,11 @@
+*.gem
+*.rbc
+/.config
+/coverage/
+/spec/reports/
+/spec/examples.txt
+/tmp/
+/.bundle/
+/vendor/bundle
+.rvmrc
+/.idea/*
