@@ -20,9 +20,25 @@ describe Proxin::Conclusion, type: :model do
       end
       let!(:expected_groups) do
         {
-          "192.168.0.1:8080@:" => { proxy: proxy_1, successful_tasks: [tasks[0]], failed_tasks: [] },
-          "192.168.0.2:8080@:" => { proxy: proxy_2, successful_tasks: [], failed_tasks: [tasks[1]] },
-          "192.168.0.3:8080@:" => { proxy: proxy_3, successful_tasks: [tasks[2]], failed_tasks: [tasks[3]] }
+          "192.168.0.1:8080@:" => {
+            proxy: proxy_1,
+            reports: [
+              Proxin::ProxyReport.new(action: tasks[0][:action], output: tasks[0][:output])
+            ]
+          },
+          "192.168.0.2:8080@:" => {
+            proxy: proxy_2,
+            reports: [
+              Proxin::ProxyReport.new(action: tasks[1][:action], output: tasks[1][:output])
+            ]
+          },
+          "192.168.0.3:8080@:" => {
+            proxy: proxy_3,
+            reports: [
+              Proxin::ProxyReport.new(action: tasks[2][:action], output: tasks[2][:output]),
+              Proxin::ProxyReport.new(action: tasks[3][:action], output: tasks[3][:output])
+            ]
+          }
         }
       end
 

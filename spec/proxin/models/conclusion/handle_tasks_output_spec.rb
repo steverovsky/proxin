@@ -6,7 +6,9 @@ describe Proxin::Conclusion, type: :model do
 
       it "should call group_tasks_by_proxies and update_status_by_groups" do
         expect(conclusion)
-            .to receive(:build_groups).with(tasks)
+            .to receive(:build_reports).with(tasks)
+        expect(conclusion)
+          .to receive(:build_groups)
         expect(conclusion)
             .to receive(:update_status_by_groups)
 

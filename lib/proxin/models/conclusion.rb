@@ -2,14 +2,16 @@ require "ostruct"
 
 module Proxin
   class Conclusion
-    attr_reader :status, :groups
+    attr_reader :status, :groups, :proxies
 
     def initialize
       initialize_groups
+      initialize_proxies
     end
 
     def handle_tasks_output(tasks)
-      build_groups(tasks)
+      build_reports(tasks)
+      build_groups
       update_status_by_groups
     end
 
@@ -27,14 +29,24 @@ module Proxin
 
     private
 
-    def build_groups(tasks)
+    def build_reports(tasks)
+      @proxies = []
       group_tasks_by_proxies(tasks).each do |_proxy_string, grouped_task|
-        if grouped_task[:failed_tasks].count == 0
-          @groups.alive << grouped_task
-        elsif grouped_task[:successful_tasks].count > 0
-          @groups.sick << grouped_task
+        proxy = grouped_task[:proxy]
+        proxy.write_reports(grouped_task[:reports])
+
+        @proxies << proxy
+      end
+    end
+
+    def build_groups
+      @proxies.each do |proxy|
+        if proxy.reports(report_statuses: [ImplementerStatusType::FAILURE]).count == 0
+          @groups.alive << proxy
+        elsif proxy.reports(report_statuses: [ImplementerStatusType::SUCCESS]).count > 0
+          @groups.sick << proxy
         else
-          @groups.dead << grouped_task
+          @groups.dead << proxy
         end
       end
     end
@@ -43,36 +55,30 @@ module Proxin
       grouped_tasks = {}
 
       tasks.each do |task|
-        if grouped_tasks[task[:proxy].to_s].nil?
-          grouped_tasks[task[:proxy].to_s] = {
-              proxy: task[:proxy],
-              successful_tasks: [],
-              failed_tasks: []
-          }
-        end
-
-        if task[:output].status == ImplementerStatusType::SUCCESS
-          grouped_tasks[task[:proxy].to_s][:successful_tasks] << task
-        else
-          grouped_tasks[task[:proxy].to_s][:failed_tasks] << task
-        end
+        grouped_tasks[task[:proxy].to_s] ||= { proxy: task[:proxy], reports: [] }
+        grouped_tasks[task[:proxy].to_s][:reports] << ProxyReport.new(action: task[:action], output: task[:output])
       end
 
       grouped_tasks
     end
 
     def update_status_by_groups
-      if @groups.sick.empty? && @groups.dead.empty?
-        return @status = ConclusionStatusType::SUCCESS
-      elsif @groups.alive.empty? && @groups.sick.empty?
-        return @status = ConclusionStatusType::FAILURE
-      end
-
-      @status = ConclusionStatusType::PARTIAL_SUCCESS
+      @status =
+        if @groups.sick.empty? && @groups.dead.empty?
+          ConclusionStatusType::SUCCESS
+        elsif @groups.alive.empty? && @groups.sick.empty?
+          ConclusionStatusType::FAILURE
+        else
+          ConclusionStatusType::PARTIAL_SUCCESS
+        end
     end
 
     def initialize_groups
       @groups = OpenStruct.new(alive: [], sick: [], dead: [])
+    end
+
+    def initialize_proxies
+      @proxies = []
     end
   end
 end

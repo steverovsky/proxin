@@ -18,30 +18,18 @@ describe Proxin::Conclusion, type: :model do
             { proxy: proxy_3, action: action_4, output: double(status: Proxin::ImplementerStatusType::FAILURE) },
         ]
       end
-      let!(:groups) do # TODO: RENAME!
-        {
-            "192.168.0.1:8080@:" => { proxy: proxy_1, successful_tasks: [tasks[0]], failed_tasks: [] },
-            "192.168.0.2:8080@:" => { proxy: proxy_2, successful_tasks: [], failed_tasks: [tasks[1]] },
-            "192.168.0.3:8080@:" => { proxy: proxy_3, successful_tasks: [tasks[2]], failed_tasks: [tasks[3]] }
-        }
-      end
       let!(:expected_groups) do
         {
-          alive: [
-            { proxy: proxy_1, successful_tasks: [tasks[0]], failed_tasks: [] }
-          ],
-          sick: [
-            { proxy: proxy_3, successful_tasks: [tasks[2]], failed_tasks: [tasks[3]] }
-          ],
-          dead: [
-            { proxy: proxy_2, successful_tasks: [], failed_tasks: [tasks[1]] }
-          ]
+          alive: [proxy_1],
+          sick: [proxy_3],
+          dead: [proxy_2]
         }
       end
 
 
       it "should build groups" do
-        conclusion.send(:build_groups, tasks)
+        conclusion.send(:build_reports, tasks)
+        conclusion.send(:build_groups)
 
         expect(conclusion.groups.alive)
             .to contain_exactly(*expected_groups[:alive])
