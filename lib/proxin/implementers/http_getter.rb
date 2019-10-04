@@ -24,7 +24,7 @@ module Proxin
           method: :get,
           followlocation: true,
           proxy: "http://#{@proxy.ip}:#{@proxy.port}",
-          proxyuserpwd: "#{@proxy.username}:#{@proxy.password}"
+          proxyuserpwd: @proxy.proxyuserpwd
         )
 
         @response = request.run
